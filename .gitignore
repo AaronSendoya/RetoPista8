@@ -46,3 +46,4 @@ CLAUDE.md
 
 # datos de participantes (PII) - nunca deben subirse al repositorio
 *.xlsx
+/data/

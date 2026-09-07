@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import * as fs from 'fs';
+import * as path from 'path';
 import client from '@/lib/mongodb';
 
 interface IAsistencia {
@@ -12,6 +14,16 @@ interface IAsistencia {
   estado_certificacion: 'Aprobado' | 'Reprobado';
 }
 
+// Respaldo temporal mientras Atlas M0 tiene problemas de conexión TLS.
+// Si existe data/asistencias-local.json, se sirve desde ahí (mismos datos
+// reales, generados con scripts/export-local.ts) sin tocar Mongo. Borra
+// ese archivo para volver al comportamiento normal contra Atlas.
+const LOCAL_DATA_PATH = path.join(process.cwd(), 'data', 'asistencias-local.json');
+let datosLocales: IAsistencia[] | null = null;
+if (fs.existsSync(LOCAL_DATA_PATH)) {
+  datosLocales = JSON.parse(fs.readFileSync(LOCAL_DATA_PATH, 'utf-8'));
+}
+
 const MAX_INTENTOS = 3;
 
 // Atlas M0 (tier gratuito) resetea conexiones bajo contención y el driver
@@ -23,7 +35,7 @@ async function buscarAsistencia(ci: number) {
   for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
     try {
       await client.connect();
-      const db = client.db(process.env.MONGODB_DB || 'pista8_track_mujeres_web');
+      const db = client.db(process.env.MONGODB_DB || 'pista8_track_mujeres');
       return await db
         .collection<IAsistencia>('asistencias')
         .findOne({ ci }, { projection: { _id: 0 } });
@@ -50,7 +62,9 @@ export async function GET(
   }
 
   try {
-    const asistencia = await buscarAsistencia(Number(ci));
+    const asistencia = datosLocales
+      ? datosLocales.find((registro) => registro.ci === Number(ci)) ?? null
+      : await buscarAsistencia(Number(ci));
 
     if (!asistencia) {
       return NextResponse.json(
