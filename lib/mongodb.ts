@@ -1,10 +1,7 @@
 import dns from 'node:dns';
 import { MongoClient } from 'mongodb';
 
-// Algunos entornos tienen un proxy DNS local (VPN, antivirus) en 127.0.0.1
-// que rechaza específicamente las consultas SRV que necesita mongodb+srv://,
-// aunque el resto de la resolución DNS funcione normal. Se usan DNS públicos
-// directamente para esta consulta, evitando ese proxy roto.
+
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 dns.setDefaultResultOrder('ipv4first');
 

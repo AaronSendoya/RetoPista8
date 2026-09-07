@@ -14,10 +14,21 @@ interface IAsistencia {
   estado_certificacion: 'Aprobado' | 'Reprobado';
 }
 
-const LOCAL_DATA_PATH = path.join(process.cwd(), 'data', 'asistencias-local.json');
+// Render no permite subcarpetas en el nombre de un Secret File, así que ahí
+// queda en la raíz del proyecto o en /etc/secrets/. En local se sigue usando
+// data/asistencias-local.json. Se prueban las tres rutas posibles.
+const CANDIDATOS_DATA_LOCAL = [
+  path.join(process.cwd(), 'data', 'asistencias-local.json'),
+  path.join(process.cwd(), 'asistencias-local.json'),
+  '/etc/secrets/asistencias-local.json',
+];
+
 let datosLocales: IAsistencia[] | null = null;
-if (fs.existsSync(LOCAL_DATA_PATH)) {
-  datosLocales = JSON.parse(fs.readFileSync(LOCAL_DATA_PATH, 'utf-8'));
+for (const ruta of CANDIDATOS_DATA_LOCAL) {
+  if (/*turbopackIgnore: true*/ fs.existsSync(ruta)) {
+    datosLocales = JSON.parse(/*turbopackIgnore: true*/ fs.readFileSync(ruta, 'utf-8'));
+    break;
+  }
 }
 
 const MAX_INTENTOS = 3;
