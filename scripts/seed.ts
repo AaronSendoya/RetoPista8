@@ -8,7 +8,7 @@ import * as fs from 'fs';
 dotenv.config({ path: path.join(process.cwd(), '.env.local') });
 
 const MONGODB_URI = process.env.MONGODB_URI;
-const DB_NAME = process.env.MONGODB_DB || 'pista8_track_mujeres';
+const DB_NAME = process.env.MONGODB_DB || 'pista8_track_mujeres_web';
 const MIN_ATTENDANCE_PERCENTAGE = 80;
 
 if (!MONGODB_URI) {

@@ -23,7 +23,7 @@ async function buscarAsistencia(ci: number) {
   for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
     try {
       await client.connect();
-      const db = client.db(process.env.MONGODB_DB || 'pista8_track_mujeres');
+      const db = client.db(process.env.MONGODB_DB || 'pista8_track_mujeres_web');
       return await db
         .collection<IAsistencia>('asistencias')
         .findOne({ ci }, { projection: { _id: 0 } });
