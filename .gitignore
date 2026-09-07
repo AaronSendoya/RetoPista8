@@ -45,5 +45,5 @@ CLAUDE.md
 .env.local
 
 # datos de participantes (PII) - nunca deben subirse al repositorio
-*.xlsx
+#.xlsx
 /data/

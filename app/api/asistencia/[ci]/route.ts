@@ -14,10 +14,6 @@ interface IAsistencia {
   estado_certificacion: 'Aprobado' | 'Reprobado';
 }
 
-// Respaldo temporal mientras Atlas M0 tiene problemas de conexión TLS.
-// Si existe data/asistencias-local.json, se sirve desde ahí (mismos datos
-// reales, generados con scripts/export-local.ts) sin tocar Mongo. Borra
-// ese archivo para volver al comportamiento normal contra Atlas.
 const LOCAL_DATA_PATH = path.join(process.cwd(), 'data', 'asistencias-local.json');
 let datosLocales: IAsistencia[] | null = null;
 if (fs.existsSync(LOCAL_DATA_PATH)) {
@@ -25,10 +21,6 @@ if (fs.existsSync(LOCAL_DATA_PATH)) {
 }
 
 const MAX_INTENTOS = 3;
-
-// Atlas M0 (tier gratuito) resetea conexiones bajo contención y el driver
-// de Mongo marca esos fallos como RetryableError. Reintentamos la conexión
-// y la consulta completa en vez de fallar en el primer intento.
 async function buscarAsistencia(ci: number) {
   let ultimoError: unknown;
 
