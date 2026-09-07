@@ -12,6 +12,32 @@ interface IAsistencia {
   estado_certificacion: 'Aprobado' | 'Reprobado';
 }
 
+const MAX_INTENTOS = 3;
+
+// Atlas M0 (tier gratuito) resetea conexiones bajo contención y el driver
+// de Mongo marca esos fallos como RetryableError. Reintentamos la conexión
+// y la consulta completa en vez de fallar en el primer intento.
+async function buscarAsistencia(ci: number) {
+  let ultimoError: unknown;
+
+  for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
+    try {
+      await client.connect();
+      const db = client.db(process.env.MONGODB_DB || 'pista8_track_mujeres');
+      return await db
+        .collection<IAsistencia>('asistencias')
+        .findOne({ ci }, { projection: { _id: 0 } });
+    } catch (error) {
+      ultimoError = error;
+      if (intento < MAX_INTENTOS) {
+        await new Promise((resolve) => setTimeout(resolve, 400 * intento));
+      }
+    }
+  }
+
+  throw ultimoError;
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ ci: string }> }
@@ -24,12 +50,7 @@ export async function GET(
   }
 
   try {
-    await client.connect();
-    const db = client.db(process.env.MONGODB_DB || 'pista8_track_mujeres');
-
-    const asistencia = await db
-      .collection<IAsistencia>('asistencias')
-      .findOne({ ci: Number(ci) }, { projection: { _id: 0 } });
+    const asistencia = await buscarAsistencia(Number(ci));
 
     if (!asistencia) {
       return NextResponse.json(
