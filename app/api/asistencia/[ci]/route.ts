@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import client from '@/lib/mongodb';
 
 interface IAsistencia {
   ci: number;
@@ -24,7 +24,7 @@ export async function GET(
   }
 
   try {
-    const client = await clientPromise;
+    await client.connect();
     const db = client.db(process.env.MONGODB_DB || 'pista8_track_mujeres');
 
     const asistencia = await db

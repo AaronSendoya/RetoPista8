@@ -43,3 +43,6 @@ next-env.d.ts
 # claude
 CLAUDE.md
 .env.local
+
+# datos de participantes (PII) - nunca deben subirse al repositorio
+*.xlsx
